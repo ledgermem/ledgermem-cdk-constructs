@@ -1,0 +1,28 @@
+{
+  "name": "@ledgermem/cdk-constructs",
+  "version": "0.1.0",
+  "description": "AWS CDK constructs for deploying LedgerMem on AWS (Fargate + Aurora + ElastiCache).",
+  "license": "MIT",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": ["lib", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "aws-cdk-lib": "^2.150.0",
+    "constructs": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "aws-cdk-lib": "^2.150.0",
+    "constructs": "^10.4.0",
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.0"
+  },
+  "publishConfig": { "access": "public" },
+  "repository": { "type": "git", "url": "git+https://github.com/ledgermem/ledgermem-cdk-constructs.git" },
+  "keywords": ["aws", "cdk", "ledgermem", "memory", "fargate", "aurora"]
+}

@@ -1,0 +1,7 @@
+node_modules/
+lib/*.js
+lib/*.d.ts
+lib/*.js.map
+.DS_Store
+*.log
+cdk.out/

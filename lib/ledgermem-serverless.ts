@@ -1,6 +1,7 @@
 import { Construct } from "constructs";
 import {
   Duration,
+  RemovalPolicy,
   aws_ec2 as ec2,
   aws_lambda as lambda,
   aws_apigatewayv2 as apigw,
@@ -41,6 +42,12 @@ export class LedgerMemServerless extends Construct {
       serverlessV2MaxCapacity: 8,
       serverlessV2MinCapacity: 0.5,
       storageEncrypted: true,
+      // Default RDS removal policy is DESTROY in CDK. Snapshot prevents
+      // permanent data loss when the stack is torn down or replaced — even
+      // the "serverless" variant gets used for staging / pilot tenants and
+      // accidentally dropping the cluster has cost real customers data.
+      backup: { retention: Duration.days(7) },
+      removalPolicy: RemovalPolicy.SNAPSHOT,
     });
 
     this.fn = new lambda.DockerImageFunction(this, "Fn", {

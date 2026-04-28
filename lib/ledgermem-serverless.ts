@@ -40,6 +40,7 @@ export class LedgerMemServerless extends Construct {
       defaultDatabaseName: "ledgermem",
       serverlessV2MaxCapacity: 8,
       serverlessV2MinCapacity: 0.5,
+      storageEncrypted: true,
     });
 
     this.fn = new lambda.DockerImageFunction(this, "Fn", {

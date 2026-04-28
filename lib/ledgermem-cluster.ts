@@ -63,7 +63,7 @@ export interface LedgerMemClusterProps {
 export class LedgerMemCluster extends Construct {
   public readonly service: ecsPatterns.ApplicationLoadBalancedFargateService;
   public readonly database: rds.DatabaseCluster;
-  public readonly cache: elasticache.CfnCacheCluster;
+  public readonly cache: elasticache.CfnReplicationGroup;
   public readonly apiKeySecret: secrets.Secret;
 
   constructor(scope: Construct, id: string, props: LedgerMemClusterProps = {}) {
@@ -107,7 +107,8 @@ export class LedgerMemCluster extends Construct {
       removalPolicy: RemovalPolicy.SNAPSHOT,
     });
 
-    // --- Redis
+    // --- Redis (replication group so transit + at-rest encryption are available;
+    //     CfnCacheCluster does not support TransitEncryptionEnabled).
     const cacheSubnetGroup = new elasticache.CfnSubnetGroup(this, "CacheSubnets", {
       description: "LedgerMem Redis",
       subnetIds: vpc.privateSubnets.map((s) => s.subnetId),
@@ -118,13 +119,19 @@ export class LedgerMemCluster extends Construct {
       allowAllOutbound: true,
     });
 
-    this.cache = new elasticache.CfnCacheCluster(this, "Cache", {
+    const cacheReplicationGroup = new elasticache.CfnReplicationGroup(this, "CacheRG", {
+      replicationGroupDescription: "LedgerMem Redis (TLS)",
       engine: "redis",
       cacheNodeType: "cache.t4g.medium",
-      numCacheNodes: 1,
+      numCacheClusters: 1,
+      automaticFailoverEnabled: false,
       cacheSubnetGroupName: cacheSubnetGroup.ref,
-      vpcSecurityGroupIds: [cacheSg.securityGroupId],
+      securityGroupIds: [cacheSg.securityGroupId],
+      transitEncryptionEnabled: true,
+      atRestEncryptionEnabled: true,
     });
+
+    this.cache = cacheReplicationGroup;
 
     // --- API key secret
     this.apiKeySecret = new secrets.Secret(this, "ApiKey", {

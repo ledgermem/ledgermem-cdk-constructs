@@ -57,7 +57,18 @@ export class LedgerMemServerless extends Construct {
       memorySize: 1024,
       timeout: Duration.seconds(28),
       vpc,
-      environment: { NODE_ENV: "production" },
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      // Cluster endpoint and port are CFN tokens at synth time. Pass them via
+      // `environment` (CDK resolves the tokens at deploy time) plus the secret
+      // ARN so the Lambda can fetch credentials at runtime — the previous
+      // version had no DB wiring at all and the function could not connect.
+      environment: {
+        NODE_ENV: "production",
+        DB_HOST: this.database.clusterEndpoint.hostname,
+        DB_PORT: this.database.clusterEndpoint.port.toString(),
+        DB_NAME: "ledgermem",
+        DB_SECRET_ARN: dbSecret.secretArn,
+      },
     });
 
     dbSecret.grantRead(this.fn);

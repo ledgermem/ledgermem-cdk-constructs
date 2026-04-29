@@ -1,2 +1,2 @@
-export { LedgerMemCluster, type LedgerMemClusterProps } from "./ledgermem-cluster.js";
-export { LedgerMemServerless, type LedgerMemServerlessProps } from "./ledgermem-serverless.js";
+export { MnemoCluster, type MnemoClusterProps } from "./getmnemo-cluster.js";
+export { MnemoServerless, type MnemoServerlessProps } from "./getmnemo-serverless.js";

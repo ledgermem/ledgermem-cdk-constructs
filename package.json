@@ -1,7 +1,7 @@
 {
-  "name": "@ledgermem/cdk-constructs",
+  "name": "@getmnemo/cdk-constructs",
   "version": "0.1.0",
-  "description": "AWS CDK constructs for deploying LedgerMem on AWS (Fargate + Aurora + ElastiCache).",
+  "description": "AWS CDK constructs for deploying Mnemo on AWS (Fargate + Aurora + ElastiCache).",
   "license": "MIT",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -23,6 +23,6 @@
     "vitest": "^2.0.0"
   },
   "publishConfig": { "access": "public" },
-  "repository": { "type": "git", "url": "git+https://github.com/ledgermem/ledgermem-cdk-constructs.git" },
-  "keywords": ["aws", "cdk", "ledgermem", "memory", "fargate", "aurora"]
+  "repository": { "type": "git", "url": "git+https://github.com/getmnemo/getmnemo-cdk-constructs.git" },
+  "keywords": ["aws", "cdk", "getmnemo", "memory", "fargate", "aurora"]
 }

@@ -13,22 +13,22 @@ import {
 /**
  * Serverless flavor: Lambda + Aurora Serverless v2 + HTTP API. For low-volume / dev.
  */
-export interface LedgerMemServerlessProps {
+export interface MnemoServerlessProps {
   readonly vpc?: ec2.IVpc;
   readonly imageTag?: string;
 }
 
-export class LedgerMemServerless extends Construct {
+export class MnemoServerless extends Construct {
   public readonly api: apigw.HttpApi;
   public readonly fn: lambda.DockerImageFunction;
   public readonly database: rds.DatabaseCluster;
 
-  constructor(scope: Construct, id: string, props: LedgerMemServerlessProps = {}) {
+  constructor(scope: Construct, id: string, props: MnemoServerlessProps = {}) {
     super(scope, id);
 
     const vpc = props.vpc ?? new ec2.Vpc(this, "Vpc", { maxAzs: 2, natGateways: 1 });
 
-    const dbSecret = new rds.DatabaseSecret(this, "DbSecret", { username: "ledgermem" });
+    const dbSecret = new rds.DatabaseSecret(this, "DbSecret", { username: "getmnemo" });
 
     this.database = new rds.DatabaseCluster(this, "Db", {
       engine: rds.DatabaseClusterEngine.auroraPostgres({
@@ -38,7 +38,7 @@ export class LedgerMemServerless extends Construct {
       vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       credentials: rds.Credentials.fromSecret(dbSecret),
-      defaultDatabaseName: "ledgermem",
+      defaultDatabaseName: "getmnemo",
       serverlessV2MaxCapacity: 8,
       serverlessV2MinCapacity: 0.5,
       storageEncrypted: true,
@@ -66,7 +66,7 @@ export class LedgerMemServerless extends Construct {
         NODE_ENV: "production",
         DB_HOST: this.database.clusterEndpoint.hostname,
         DB_PORT: this.database.clusterEndpoint.port.toString(),
-        DB_NAME: "ledgermem",
+        DB_NAME: "getmnemo",
         DB_SECRET_ARN: dbSecret.secretArn,
       },
     });

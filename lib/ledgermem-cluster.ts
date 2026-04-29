@@ -14,12 +14,12 @@ import {
 } from "aws-cdk-lib";
 
 /**
- * Props for {@link LedgerMemCluster} — production AWS deployment of LedgerMem.
+ * Props for {@link MnemoCluster} — production AWS deployment of Mnemo.
  *
  * Architecture: Fargate Service (API + worker) + Aurora PostgreSQL with pgvector
- * + ElastiCache Redis + ALB with TLS. Image is pulled from ghcr.io/ledgermem/api.
+ * + ElastiCache Redis + ALB with TLS. Image is pulled from ghcr.io/getmnemo/api.
  */
-export interface LedgerMemClusterProps {
+export interface MnemoClusterProps {
   /** VPC to deploy into. If omitted, a new VPC with NAT is created. */
   readonly vpc?: ec2.IVpc;
 
@@ -32,7 +32,7 @@ export interface LedgerMemClusterProps {
   /** ACM certificate for TLS. If omitted and `domainName` is set, one is provisioned via DNS validation. */
   readonly certificate?: acm.ICertificate;
 
-  /** Container image. Defaults to `ghcr.io/ledgermem/api:latest`. */
+  /** Container image. Defaults to `ghcr.io/getmnemo/api:latest`. */
   readonly imageTag?: string;
 
   /** Desired task count for the API service. Defaults to 2. */
@@ -52,21 +52,21 @@ export interface LedgerMemClusterProps {
 }
 
 /**
- * High-level construct that provisions a production LedgerMem deployment on AWS.
+ * High-level construct that provisions a production Mnemo deployment on AWS.
  *
  * @example
- * new LedgerMemCluster(this, "LedgerMem", {
+ * new MnemoCluster(this, "Mnemo", {
  *   domainName: "memory.example.com",
  *   hostedZone: route53.HostedZone.fromLookup(this, "Z", { domainName: "example.com" }),
  * });
  */
-export class LedgerMemCluster extends Construct {
+export class MnemoCluster extends Construct {
   public readonly service: ecsPatterns.ApplicationLoadBalancedFargateService;
   public readonly database: rds.DatabaseCluster;
   public readonly cache: elasticache.CfnReplicationGroup;
   public readonly apiKeySecret: secrets.Secret;
 
-  constructor(scope: Construct, id: string, props: LedgerMemClusterProps = {}) {
+  constructor(scope: Construct, id: string, props: MnemoClusterProps = {}) {
     super(scope, id);
 
     const vpc =
@@ -74,7 +74,7 @@ export class LedgerMemCluster extends Construct {
 
     // --- Postgres (Aurora with pgvector preinstalled via parameter group)
     const dbSecret = new rds.DatabaseSecret(this, "DbSecret", {
-      username: "ledgermem",
+      username: "getmnemo",
     });
 
     const parameterGroup = new rds.ParameterGroup(this, "DbParams", {
@@ -101,7 +101,7 @@ export class LedgerMemCluster extends Construct {
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       credentials: rds.Credentials.fromSecret(dbSecret),
       parameterGroup,
-      defaultDatabaseName: "ledgermem",
+      defaultDatabaseName: "getmnemo",
       backup: { retention: Duration.days(14) },
       storageEncrypted: true,
       removalPolicy: RemovalPolicy.SNAPSHOT,
@@ -110,7 +110,7 @@ export class LedgerMemCluster extends Construct {
     // --- Redis (replication group so transit + at-rest encryption are available;
     //     CfnCacheCluster does not support TransitEncryptionEnabled).
     const cacheSubnetGroup = new elasticache.CfnSubnetGroup(this, "CacheSubnets", {
-      description: "LedgerMem Redis",
+      description: "Mnemo Redis",
       subnetIds: vpc.privateSubnets.map((s) => s.subnetId),
     });
 
@@ -120,7 +120,7 @@ export class LedgerMemCluster extends Construct {
     });
 
     const cacheReplicationGroup = new elasticache.CfnReplicationGroup(this, "CacheRG", {
-      replicationGroupDescription: "LedgerMem Redis (TLS)",
+      replicationGroupDescription: "Mnemo Redis (TLS)",
       engine: "redis",
       cacheNodeType: "cache.t4g.medium",
       numCacheClusters: 1,
@@ -160,7 +160,7 @@ export class LedgerMemCluster extends Construct {
       memoryLimitMiB: props.memoryLimitMiB ?? 2048,
       taskImageOptions: {
         image: ecs.ContainerImage.fromRegistry(
-          `ghcr.io/ledgermem/api:${props.imageTag ?? "latest"}`,
+          `ghcr.io/getmnemo/api:${props.imageTag ?? "latest"}`,
         ),
         containerPort: 4100,
         environment: {

@@ -1,5 +1,5 @@
 {
-  "name": "@getmnemo/cdk-constructs",
+  "name": "@mnemo/cdk-constructs",
   "version": "0.1.0",
   "description": "AWS CDK constructs for deploying Mnemo on AWS (Fargate + Aurora + ElastiCache).",
   "license": "MIT",
